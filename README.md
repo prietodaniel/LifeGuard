@@ -3,13 +3,13 @@
 1. Objetivo y Contexto
 
 Objetivo del proyecto:
-Diseñar e implementar una pulsera inteligente que detecte automáticamente situaciones de emergencia (como caídas bruscas o posibles infartos) y envíe una alerta a contactos predefinidos a través de comunicación inalámbrica. La detección debe realizarse en tiempo real para una intervención rápida.
+Diseñar e implementar una pulsera inteligente que detecte automáticamente situaciones de emergencia (como caídas bruscas o posibles infartos) y envíe una alerta a contactos predefinidos a través de comunicación inalámbrica y automaticamente emita una señal de socorro a satélites del sistema COSPAS-SARSAT. Los satélites retransmiten esta señal a centros de emergencia que, a través de la información de la señal codificada y la frecuencia de localización de 121.5 MHz, determinan la ubicación de la personas y coordinan los esfuerzos de búsqueda y rescate. La detección debe realizarse en tiempo real para una intervención rápida.
 
 Contexto de uso:
 
 Adultos mayores o personas con condiciones cardíacas crónicas.
 
-Actividades de riesgo como deportes extremos, trekking, etc.
+Actividades de riesgo como deportes extremos, trekking, ski, snowboard, ciclismo de alta montaña, descenso, etc.
 
 Uso doméstico, en hogares, hospitales o instituciones de cuidado.
 
