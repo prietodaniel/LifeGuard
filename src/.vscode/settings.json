@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gsm.h": "c",
+        "gps.h": "c",
+        "string.h": "c"
+    }
+}
