@@ -17,7 +17,7 @@ TaskHandle_t sosTaskHandle = NULL;
 void vGPSTask(void *pvParameters) {
     while (true) {
         gps_read();
-        vTaskDelay(pdMS_TO_TICKS(100)); // Ajusta este delay según necesites
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
