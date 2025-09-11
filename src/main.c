@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "pico/stdlib.h"
-#include "pico/multicore.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
