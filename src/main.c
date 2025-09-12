@@ -97,4 +97,94 @@ void gps_dma_irq_handler() {
 }
 
 // Parser básico de sentencias NMEA
+bool gps_parse_sentence(const char *sentence, char *lat, char *lon) {
+    // Ejemplo: $GPGGA,123519,4807.038,N,01131.000,E,...
+    if (strncmp(sentence, "$GPGGA", 6) != 0) return false;
 
+    char copy[GPS_BUFFER_SIZE];
+    strncpy(copy, sentence, GPS_BUFFER_SIZE);
+    char *token = strtok(copy, ",");
+
+    int field = 0;
+    while (token != NULL) {
+        field++;
+        if (field == 3) { // latitud
+            strncpy(lat, token, 15);
+        } else if (field == 4) { // N/S
+            strcat(lat, token);
+        } else if (field == 5) { // longitud
+            strncpy(lon, token, 15);
+        } else if (field == 6) { // E/W
+            strcat(lon, token);
+            return true; // ya tenemos lat/lon
+        }
+        token = strtok(NULL, ",");
+    }
+    return false;
+}
+
+// =========================
+// Task GPS
+// =========================
+void vGPSTask(void *pvParameters) {
+    char lat[20], lon[20];
+    while (true) {
+        if (gps_sentence_ready) {
+            gps_sentence_ready = false;
+            if (gps_parse_sentence(gps_line, lat, lon)) {
+                printf("GPS OK -> Lat=%s Lon=%s\n", lat, lon);
+            } else {
+                printf("GPS inválido: %s\n", gps_line);
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+// =========================
+// Task SOS
+// =========================
+void vSOSTask(void *pvParameters) {
+    char lat[20] = "0", lon[20] = "0";
+    while (true) {
+        if (gpio_get(SOS_BUTTON)) {
+            gpio_put(LED_PIN, 1);
+            char message[160];
+            sprintf(message, "EMERGENCIA! Ubicación: Lat=%s, Lon=%s", lat, lon);
+            // gsm_send_sms(EMERGENCY_PHONE, message); // implementar con tu módulo GSM
+            printf(">>> SMS: %s\n", message);
+            vTaskDelay(pdMS_TO_TICKS(SOS_DEBOUNCE_DELAY));
+        } else {
+            gpio_put(LED_PIN, 0);
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+// =========================
+// main()
+// =========================
+int main() {
+    stdio_init_all();
+
+    // Inicializa GPS y GSM
+    gps_init();
+    // gsm_init(); // implementar según tu módulo
+
+    // Inicializa GPIO
+    gpio_init(SOS_BUTTON);
+    gpio_set_dir(SOS_BUTTON, GPIO_IN);
+    gpio_pull_down(SOS_BUTTON);
+
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+
+    // Crea tareas
+    xTaskCreate(vGPSTask, "GPS Task", 1024, NULL, 2, &gpsTaskHandle);
+    xTaskCreate(vSOSTask, "SOS Task", 1024, NULL, 1, &sosTaskHandle);
+
+    // Arranca scheduler
+    vTaskStartScheduler();
+
+    while (true) { }
+}
