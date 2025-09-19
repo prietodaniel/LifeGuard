@@ -46,6 +46,28 @@ TaskHandle_t gpsTaskHandle = NULL;
 TaskHandle_t sosTaskHandle = NULL;
 
 // =========================
+// Contador global 
+// =========================
+static uint32_t idleTicks = 0;
+
+void vApplicationIdleHook(void) {
+    idleTicks++;
+}
+
+void vMonitorTask(void *pvParameters) {
+    const TickType_t xDelay = pdMS_TO_TICKS(1000);
+    while (1) {
+        uint32_t lastIdle = idleTicks;
+        idleTicks = 0;
+
+        // Este metodo muestra cada 1 segundo el tiempo que el sistema 
+        // estuvo en IDLE.
+        printf("[Monitor] IdleTicks=%lu en 1s\n", lastIdle);
+        vTaskDelay(xDelay);
+    }
+}
+
+// =========================
 // UART con DMA para GPS
 // =========================
 void gps_init() {
@@ -161,6 +183,26 @@ void vSOSTask(void *pvParameters) {
     }
 }
 
+void vApplicationIdleHook(void) {
+    // Memoria libre en el heap
+    size_t freeHeap = xPortGetFreeHeapSize();
+
+    // Memoria mínima registrada (pico de uso)
+    size_t minEverFreeHeap = xPortGetMinimumEverFreeHeapSize();
+
+    // CPU Usage (método simple): podés contar "ticks" de idle
+    static uint32_t idleCounter = 0;
+    idleCounter++;
+
+    // Cada cierto número de llamadas mostramos estadísticas
+    if (idleCounter % 100000 == 0) {
+        printf("[IdleHook] FreeHeap=%u bytes | MinHeap=%u bytes\n",
+               (unsigned int)freeHeap,
+               (unsigned int)minEverFreeHeap);
+    }
+}
+
+
 // =========================
 // main()
 // =========================
@@ -182,6 +224,9 @@ int main() {
     // Crea tareas
     xTaskCreate(vGPSTask, "GPS Task", 1024, NULL, 2, &gpsTaskHandle);
     xTaskCreate(vSOSTask, "SOS Task", 1024, NULL, 1, &sosTaskHandle);
+    
+    //Agregamos la tarea de monitoreo
+    xTaskCreate(vMonitorTask, "Monitor", 1024, NULL, 1, NULL);
 
     // Arranca scheduler
     vTaskStartScheduler();
