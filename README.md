@@ -1,5 +1,8 @@
 # LifeGuard
 
+todos los alumnos
+
+
 1. Objetivo y Contexto
 
 Objetivo del proyecto:
